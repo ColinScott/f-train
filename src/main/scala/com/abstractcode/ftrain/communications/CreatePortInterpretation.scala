@@ -28,7 +28,7 @@ object CreatePortInterpretation {
       serial <- cached match {
         case Some(s) => Eff.pure[R, Serial](s)
         case None => for {
-          s <- IOEffect.fromIO(Serial.open(portName, baudRate))
+          s <- IOEffect.fromIO(Serial(portName, baudRate))
         } yield cache.put[Serial](cacheKey, s)
       }
     } yield serial

@@ -18,8 +18,8 @@ object NceSerialCommunicationsInterpretation {
   } yield result
 
   private def sendRequest[RRun <: StackWrapper, R: _Io](serial: Serial, payload: Vector[Byte], responseSize: ResponseSize): Eff[R, Either[Throwable, Response]] = for {
-    _ <- IOEffect.fromIO[R, Either[Throwable, Unit]] { Serial.write(serial)(payload) }
-    read <- IOEffect.fromIO[R, Either[Throwable, Vector[Byte]]] { Serial.read(serial)(responseSize.size) }
+    _ <- IOEffect.fromIO[R, Either[Throwable, Unit]] { serial.write(payload) }
+    read <- IOEffect.fromIO[R, Either[Throwable, Vector[Byte]]] { serial.read(responseSize.size) }
   } yield read.map(Response)
 }
 

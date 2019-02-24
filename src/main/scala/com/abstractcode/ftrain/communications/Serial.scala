@@ -4,7 +4,10 @@ import cats.effect.IO
 import cats.implicits._
 import com.fazecast.jSerialComm.SerialPort
 
-class Serial private(val serialPort: SerialPort) {}
+trait Serial {
+  def write(data: Vector[Byte]): IO[Either[Throwable, Unit]]
+  def read(size: Int): IO[Either[Throwable, Vector[Byte]]]
+}
 
 object Serial {
 
@@ -12,7 +15,23 @@ object Serial {
   case object BaudRate9200 extends BaudRate { val rate: Int = 9200 }
   case object BaudRate19200 extends BaudRate { val rate = 19200 }
 
-  def open(portName: String, baudRate: BaudRate): IO[Serial] = for {
+  private case class SerialImpl(serialPort: SerialPort) extends Serial {
+    override def write(data: Vector[Byte]): IO[Either[Throwable, Unit]] = IO {
+      Either.catchNonFatal {
+        serialPort.getOutputStream.write(data.toArray)
+      }
+    }
+
+    override def read(size: Int): IO[Either[Throwable, Vector[Byte]]] = IO {
+      Either.catchNonFatal {
+        val buffer: Array[Byte] = Array.ofDim(size)
+        serialPort.getInputStream.read(buffer, 0, size)
+        buffer.toVector
+      }
+    }
+  }
+
+  def apply(portName: String, baudRate: BaudRate): IO[Serial] = for {
     port <- IO {
       val p = SerialPort.getCommPort(portName)
       p.setNumStopBits(1)
@@ -24,21 +43,5 @@ object Serial {
     _ <- IO {
       port.openPort()
     }
-  } yield Serial(port)
-
-  private def apply(serialPort: SerialPort) = new Serial(serialPort)
-
-  def write(serial: Serial)(data: Vector[Byte]): IO[Either[Throwable, Unit]] = IO {
-    Either.catchNonFatal {
-      serial.serialPort.getOutputStream.write(data.toArray)
-    }
-  }
-
-  def read(serial: Serial)(size: Int): IO[Either[Throwable, Vector[Byte]]] = IO {
-    Either.catchNonFatal {
-      val buffer: Array[Byte] = Array.ofDim(size)
-      serial.serialPort.getInputStream.read(buffer, 0, size)
-      buffer.toVector
-    }
-  }
+  } yield SerialImpl(port)
 }
