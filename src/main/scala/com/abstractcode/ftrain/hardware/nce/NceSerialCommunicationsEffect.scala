@@ -24,7 +24,7 @@ object NceSerialCommunicationsEffect {
     val sixteenByte: ResponseSize = ResponseSizeImpl(16)
   }
 
-  case class Request(serial: Serial, payload: Vector[Byte], responseSize: ResponseSize) extends NceSerialCommunicationsEffect[Either[Throwable, Response]]
+  case class Request(serial: Serial, payload: Vector[Byte], responseSize: ResponseSize) extends NceSerialCommunicationsEffect[NceComms[Response]]
   case class Response(payload: Vector[Byte])
 
 }
@@ -34,6 +34,6 @@ trait NceSerialCommunicationsEffectDSL {
     serial: Serial,
     payload: Vector[Byte],
     responseSize: ResponseSize
-  ): Eff[R, Either[Throwable, Response]] =
+  ): Eff[R, NceComms[Response]] =
     Eff.send(Request(serial, payload, responseSize))
 }

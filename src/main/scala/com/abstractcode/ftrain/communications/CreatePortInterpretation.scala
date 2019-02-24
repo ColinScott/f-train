@@ -38,6 +38,6 @@ object CreatePortInterpretation {
 
 trait CreatePortSyntax {
   implicit class CreatePortInterpretationOps[R, A](eff: Eff[R, A]) {
-    def runCreatePort[U: Member.Aux[CreatePortEffect, R, ?]: _Io: _Memo]: Eff[U, A] = CreatePortInterpretation.runCreatePort(eff)
+    def runCreatePort[RRun <: StackWrapper, U: Member.Aux[CreatePortEffect, R, ?]: _Io: _Memo]: Eff[U, A] = CreatePortInterpretation.runCreatePort(eff)
   }
 }

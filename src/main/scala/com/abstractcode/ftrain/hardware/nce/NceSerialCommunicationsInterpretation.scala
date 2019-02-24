@@ -17,9 +17,9 @@ object NceSerialCommunicationsInterpretation {
     })
   } yield result
 
-  private def sendRequest[RRun <: StackWrapper, R: _Io](serial: Serial, payload: Vector[Byte], responseSize: ResponseSize): Eff[R, Either[Throwable, Response]] = for {
-    _ <- IOEffect.fromIO[R, Either[Throwable, Unit]] { serial.write(payload) }
-    read <- IOEffect.fromIO[R, Either[Throwable, Vector[Byte]]] { serial.read(responseSize.size) }
+  private def sendRequest[RRun <: StackWrapper, R: _Io](serial: Serial, payload: Vector[Byte], responseSize: ResponseSize): Eff[R, NceComms[Response]] = for {
+    _ <- IOEffect.fromIO[R, NceComms[Unit]] { serial.write(payload) }
+    read <- IOEffect.fromIO[R, NceComms[Vector[Byte]]] { serial.read(responseSize.size) }
   } yield read.map(Response)
 }
 
