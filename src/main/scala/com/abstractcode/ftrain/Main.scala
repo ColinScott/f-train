@@ -12,18 +12,20 @@ import com.abstractcode.ftrain.communications.CreatePortEffect.CreatePortEffect
 
 object Main extends App {
 
-  type FullStack = Fx.fx3[IO, CreatePortEffect, NceSerialCommunicationsEffect]
+  type FullStack = Fx.fx4[IO, Memoized, CreatePortEffect, NceSerialCommunicationsEffect]
 
   class FullStackWrapper extends StackWrapper {
     type Stack = FullStack
   }
 
-  val program: Eff[FullStack, Either[Throwable, Response]] = for {
-    port <- createPort[FullStack]("ttyUSB0", BaudRate19200)
-    a <- makeRequest[FullStack](port, Vector(0x80.toByte), ResponseSize.singleByte)
-  } yield a
+  val program: Eff[FullStack, (Either[Throwable, Response], Either[Throwable, Response])] = for {
+    port1 <- createPort[FullStack]("ttyUSB0", BaudRate19200)
+    a <- makeRequest[FullStack](port1, Vector(0x80.toByte), ResponseSize.singleByte)
+    port2 <- createPort[FullStack]("ttyUSB0", BaudRate19200)
+    b <- makeRequest[FullStack](port2, Vector(0x80.toByte), ResponseSize.singleByte)
+  } yield (a, b)
 
-  val a = program.runNceSerialCommunications.runCreatePort.unsafeRunSync
+  val a = program.runNceSerialCommunications.runCreatePort.runIoMemo(ConcurrentHashMapCache()).unsafeRunSync
 
   println(a)
 }
