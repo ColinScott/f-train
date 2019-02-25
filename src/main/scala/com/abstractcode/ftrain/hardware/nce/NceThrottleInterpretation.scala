@@ -2,19 +2,21 @@ package com.abstractcode.ftrain.hardware.nce
 
 import cats.implicits._
 import com.abstractcode.ftrain.DSL._
-import com.abstractcode.ftrain.StackWrapper
+import com.abstractcode.ftrain._
 import com.abstractcode.ftrain.communications.CreatePortEffect.HasCreatePort
 import com.abstractcode.ftrain.communications.Serial.BaudRate19200
 import com.abstractcode.ftrain.hardware.nce.NceSerialCommunicationsEffect.{HasNceSerialCommunications, ResponseSize}
-import com.abstractcode.ftrain.hardware.nce.NceThrottleEffect.{NceThrottleEffect, NoOp}
+import com.abstractcode.ftrain.hardware.nce.NceThrottleEffect.{NceThrottleEffect, NoOp, SetLocomotiveSpeed}
 import org.atnos.eff._
 import org.atnos.eff.interpret._
+import com.abstractcode.ftrain.hardware.nce.IdTranslation._
 
 object NceThrottleInterpretation {
   def runNceThrottle[RRun <: StackWrapper, R, U: Member.Aux[NceThrottleEffect, R, ?] : HasCreatePort : HasNceSerialCommunications, A](eff: Eff[R, A]): Eff[U, A] = for {
     result <- translate(eff)(new Translate[NceThrottleEffect, U] {
       override def apply[X](kv: NceThrottleEffect[X]): Eff[U, X] = kv match {
         case NoOp => noop()
+        case SetLocomotiveSpeed(id, speed, direction) => setLocomotiveSpeed(id, speed, direction)
       }
     })
   } yield result
@@ -29,6 +31,27 @@ object NceThrottleInterpretation {
         else Eff.pure[R, NceComms[Unit]](new Exception(s"Unknown response from hardware: ${r.payload}").asLeft[Unit])
     )
   } yield validResponse
+
+  private def setLocomotiveSpeed[RRun <: StackWrapper, R: HasCreatePort : HasNceSerialCommunications](id: LocomotiveId, speed: Speed, direction: Direction): Eff[R, Either[Throwable, Unit]] = {
+    val locomotiveId = id.toNceFormat
+    val opcode: Byte = (speed.steps, direction) match {
+      case (SpeedSteps28, Reverse) => 0x01.toByte
+      case (SpeedSteps28, Forward) => 0x02.toByte
+      case (SpeedSteps128, Reverse) => 0x03.toByte
+      case (SpeedSteps128, Forward) => 0x04.toByte
+    }
+    val command = Vector(0xa2.toByte, locomotiveId.high, locomotiveId.low, opcode, speed.speed)
+    for {
+      port <- createPort("ttyUSB0", BaudRate19200)
+      response <- makeRequest(port, command, ResponseSize.singleByte)
+      validResponse <- response.fold(
+        l => Eff.pure[R, NceComms[Unit]](l.asLeft[Unit]),
+        r =>
+          if (r.payload == Vector(0x21.toByte)) Eff.pure[R, NceComms[Unit]](().asRight[Throwable])
+          else Eff.pure[R, NceComms[Unit]](new Exception(s"Error from hardware: ${r.payload}").asLeft[Unit])
+      )
+    } yield validResponse
+  }
 
 }
 
