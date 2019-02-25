@@ -9,12 +9,20 @@ val catsEffectVersion = "1.2.0"
 val effVersion = "5.5.0"
 val jSerialCommVersion = "2.4.0"
 
+val scalaTestVersion = "3.0.5"
+val spec2Version = "4.4.1"
+
 libraryDependencies ++= Seq(
   "com.fazecast" % "jSerialComm" % jSerialCommVersion,
   "org.atnos" %% "eff" % effVersion,
   "org.atnos" %% "eff-cats-effect" % effVersion,
   "org.typelevel" %% "cats-core" % catsVersion,
-  "org.typelevel" %% "cats-effect" % catsEffectVersion
+  "org.typelevel" %% "cats-effect" % catsEffectVersion,
+
+  "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
+  "org.specs2" %% "specs2-core" % spec2Version % Test,
+  "org.specs2" %% "specs2-matcher-extra" % spec2Version % Test,
+  "org.specs2" %% "specs2-scalacheck" % spec2Version % Test
 )
 
 scalacOptions ++= Seq(

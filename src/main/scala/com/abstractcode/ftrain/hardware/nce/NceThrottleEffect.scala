@@ -1,5 +1,6 @@
 package com.abstractcode.ftrain.hardware.nce
 
+import com.abstractcode.ftrain.LocomotiveId
 import com.abstractcode.ftrain.hardware.nce.NceThrottleEffect.{HasNceThrottle, NoOp}
 import org.atnos.eff._
 
@@ -9,6 +10,8 @@ object NceThrottleEffect {
   type HasNceThrottle[R] = NceThrottleEffect |= R
 
   case object NoOp extends NceThrottleEffect[Either[Throwable, Unit]]
+
+  case class SetLocomotiveSpeed(locomotiveId: LocomotiveId)
 }
 
 trait NceThrottleEffectDSL {
