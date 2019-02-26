@@ -25,6 +25,6 @@ object NceSerialCommunicationsInterpretation {
 
 trait NceSerialCommunicationsSyntax {
   implicit class NceSerialCommunicationsInterpretationOps[R, A](eff: Eff[R, A]) {
-    def runNceSerialCommunications[U: Member.Aux[NceSerialCommunicationsEffect, R, ?]: _Io]: Eff[U, A] = NceSerialCommunicationsInterpretation.runNceSerialCommunications(eff)
+    def runNceSerialCommunications[U: Member.Aux[NceSerialCommunicationsEffect, R, ?] : _Io]: Eff[U, A] = NceSerialCommunicationsInterpretation.runNceSerialCommunications(eff)
   }
 }
