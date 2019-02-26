@@ -4,7 +4,7 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{Inside, Matchers, WordSpec}
 
 class SpeedSpec extends WordSpec with Matchers with TableDrivenPropertyChecks with Inside {
-  private val validSpeeds = Table[SpeedSteps, Byte](
+  private val validSpeeds = Table(
     ("steps", "speed"),
     (SpeedSteps28, 0),
     (SpeedSteps28, 1),
@@ -14,16 +14,20 @@ class SpeedSpec extends WordSpec with Matchers with TableDrivenPropertyChecks wi
     (SpeedSteps128, 126)
   )
 
-  private val invalidSpeeds = Table[SpeedSteps, Byte](
+  private val invalidSpeeds = Table(
     ("steps", "speed"),
-    (SpeedSteps28, Byte.MinValue),
+    (SpeedSteps28, Int.MinValue),
+    (SpeedSteps28, -128),
     (SpeedSteps28, -1),
     (SpeedSteps28, 29),
-    (SpeedSteps28, Byte.MaxValue),
-    (SpeedSteps128, Byte.MinValue),
+    (SpeedSteps28, 127),
+    (SpeedSteps28, Int.MaxValue),
+
+    (SpeedSteps128, Int.MinValue),
+    (SpeedSteps128, -128),
     (SpeedSteps128, -1),
     (SpeedSteps128, 127),
-    (SpeedSteps128, Byte.MaxValue)
+    (SpeedSteps128, Int.MaxValue)
   )
 
   "Speeds" should {

@@ -13,6 +13,6 @@ case object SpeedSteps128 extends SpeedSteps {
 final case class Speed private(speed: Byte, steps: SpeedSteps)
 
 object Speed {
-  def apply(speed: Byte, steps: SpeedSteps): Option[Speed] =
-    if (speed >= 0 && speed <= steps.max) Some(new Speed(speed, steps)) else None
+  def apply(speed: Int, steps: SpeedSteps): Option[Speed] =
+    if (speed >= 0 && speed <= steps.max) Some(new Speed(speed.toByte, steps)) else None
 }
