@@ -1,7 +1,7 @@
 package com.abstractcode.ftrain
 
 import cats.effect.IO
-import com.abstractcode.ftrain.hardware.nce.NceSerialCommunicationsEffect.NceSerialCommunicationsEffect
+import com.abstractcode.ftrain.communications.SerialCommunicationsEffect.SerialCommunicationsEffect
 import org.atnos.eff._
 import org.atnos.eff.syntax.all._
 import org.atnos.eff.syntax.addon.cats.effect._
@@ -16,7 +16,7 @@ import com.abstractcode.ftrain.hardware.nce.NceThrottleEffect.NceThrottleEffect
 
 object Main extends App {
 
-  type FullStack = Fx.fx6[IO, SerialConfigurationReader, Memoized, CreatePortEffect, NceSerialCommunicationsEffect, NceThrottleEffect]
+  type FullStack = Fx.fx6[IO, Memoized, SerialConfigurationReader, CreatePortEffect, SerialCommunicationsEffect, NceThrottleEffect]
 
   class FullStackWrapper extends StackWrapper {
     type Stack = FullStack
@@ -28,7 +28,7 @@ object Main extends App {
 
   val stack: Eff[Fx1[IO], Either[Throwable, Unit]] = program
     .runNceThrottle
-    .runNceSerialCommunications
+    .runSerialCommunications
     .runCreatePort
     .runReader(SerialConfiguration("ttyUSB0", BaudRate19200))
     .runIoMemo(ConcurrentHashMapCache())
