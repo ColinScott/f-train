@@ -2,7 +2,6 @@ package com.abstractcode.ftrain.communications
 
 import cats.effect.IO
 import cats.implicits._
-import com.abstractcode.ftrain.hardware.nce.NceComms
 import com.fazecast.jSerialComm.SerialPort
 
 trait Serial {
@@ -17,13 +16,13 @@ object Serial {
   case object BaudRate19200 extends BaudRate { val rate = 19200 }
 
   private case class SerialImpl(serialPort: SerialPort) extends Serial {
-    override def write(data: Vector[Byte]): IO[NceComms[Unit]] = IO {
+    override def write(data: Vector[Byte]): IO[Either[Throwable, Unit]] = IO {
       Either.catchNonFatal {
         serialPort.getOutputStream.write(data.toArray)
       }
     }
 
-    override def read(size: Int): IO[NceComms[Vector[Byte]]] = IO {
+    override def read(size: Int): IO[Either[Throwable, Vector[Byte]]] = IO {
       Either.catchNonFatal {
         val buffer: Array[Byte] = Array.ofDim(size)
         serialPort.getInputStream.read(buffer, 0, size)

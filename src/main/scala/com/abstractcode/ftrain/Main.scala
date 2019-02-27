@@ -11,6 +11,7 @@ import com.abstractcode.ftrain.communications.CreatePortEffect.CreatePortEffect
 import com.abstractcode.ftrain.communications.Serial.BaudRate19200
 import com.abstractcode.ftrain.communications.SerialConfiguration
 import com.abstractcode.ftrain.communications.SerialConfigurationEffect.SerialConfigurationReader
+import com.abstractcode.ftrain.hardware.nce.NceResponse.NceResponse
 import com.abstractcode.ftrain.hardware.nce.NceThrottleEffect.NceThrottleEffect
 
 
@@ -22,11 +23,11 @@ object Main extends App {
     type Stack = FullStack
   }
 
-  val program: Eff[FullStack, Either[Throwable, Unit]] = for {
+  val program: Eff[FullStack, NceResponse] = for {
     response <- noop[FullStack]()
   } yield response
 
-  val stack: Eff[Fx1[IO], Either[Throwable, Unit]] = program
+  val stack: Eff[Fx1[IO], NceResponse] = program
     .runNceThrottle
     .runSerialCommunications
     .runCreatePort

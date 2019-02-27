@@ -1,6 +1,8 @@
 package com.abstractcode.ftrain.hardware.nce
 
 import cats.implicits._
+import com.abstractcode.ftrain.hardware.nce.NceResponse.{NceFailure, NceResponse}
+import org.atnos.eff.Eff
 
 object NceResponse {
   case class NceFailure(error: Option[NceError], throwable: Option[Throwable])
@@ -20,6 +22,8 @@ object NceResponse {
 
   type NceResponse = Either[NceFailure, Unit]
 
+  def success[R]: Eff[R, NceResponse] = Eff.pure[R, NceResponse](().asRight[NceFailure])
+
   def apply(response: Byte): NceResponse = response match {
     case '!' => ().asRight
     case '0' => NceFailure(CommandNotSupported).asLeft
@@ -28,5 +32,11 @@ object NceResponse {
     case '3' => NceFailure(CVAddressOrDataOutOfRange).asLeft
     case '4' => NceFailure(ByteCountOutOfRange).asLeft
     case e => NceFailure(UnknownNceError(e)).asLeft
+  }
+}
+
+object NceExceptions {
+  implicit class NceExceptionWrapper(val throwable: Throwable) extends AnyVal {
+    def toNceResponse[R]: Eff[R, NceResponse] = Eff.pure[R, NceResponse](NceFailure(throwable).asLeft[Unit])
   }
 }
